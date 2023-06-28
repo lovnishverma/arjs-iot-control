@@ -2,63 +2,63 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Beautiful Links</title>
+  <title>AR/VR Examples</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f2f2f2;
       margin: 0;
-      padding: 0;
+      padding: 20px;
     }
 
     h1 {
       text-align: center;
       color: #333333;
-      padding: 20px;
       margin-top: 50px;
     }
 
-    .container {
-      max-width: 600px;
+    h2 {
+      margin-top: 30px;
+      color: #333333;
+    }
+
+    .example-container {
+      max-width: 800px;
       margin: 0 auto;
       padding: 20px;
-    }
-
-    .link-list {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    .link-list li {
-      margin-bottom: 10px;
-    }
-
-    .link-list li a {
-      display: block;
-      padding: 10px;
       background-color: #ffffff;
-      border: 1px solid #cccccc;
       border-radius: 5px;
-      color: #333333;
-      text-decoration: none;
-      transition: background-color 0.3s ease;
+      margin-top: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
-    .link-list li a:hover {
-      background-color: #f2f2f2;
+    .code {
+      background-color: #f5f5f5;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
-  <h1>AVR Example Website</h1>
-  <div class="container">
-    <ul class="link-list">
-      <li><a href="https://www.example.com">AVR Example Website</a></li>
-      <li><a href="avr/example1.html">Example 1</a></li>
-      <li><a href="avr/example2.html">Example 2</a></li>
-      <li><a href="avr/example3.html">Example 3</a></li>
-      <li><a href="avr/example4.html">Example 4</a></li>
-    </ul>
+  <h1>AR/VR Examples</h1>
+  <div class="example-container">
+    <h2>A-Frame Example</h2>
+    <p>This example demonstrates a basic scene using A-Frame.</p>
+    <a href="avr/aframe.html">Go to A-Frame Example</a>
+  </div>
+
+  <div class="example-container">
+    <h2>Three.js Example</h2>
+    <p>This example shows a rotating cube using Three.js.</p>
+    <a href="avr/threejs.html">Go to Three.js Example</a>
+  </div>
+
+  <div class="example-container">
+    <h2>WebGL Example</h2>
+    <p>This example clears the canvas with a black color using WebGL.</p>
+    <a href="avr/webgl.html">Go to WebGL Example</a>
   </div>
 </body>
 </html>
