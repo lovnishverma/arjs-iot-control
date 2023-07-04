@@ -1,64 +1,71 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Three.js Example</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
-      margin: 0;
-      padding: 20px;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Three.js Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 20px;
+      }
 
-    h1 {
-      text-align: center;
-      color: #333333;
-      margin-top: 50px;
-    }
+      h1 {
+        text-align: center;
+        color: green;
+        margin-top: 50px;
+      }
 
-    .example-container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #ffffff;
-      border-radius: 5px;
-      margin-top: 20px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-  </style>
-</head>
-<body>
-  <h1>Three.js Example</h1>
-  <div class="example-container">
-    <canvas id="canvas"></canvas>
-  </div>
+      .example-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 5px;
+        margin-top: 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Three.js Example</h1>
+    <div class="example-container">
+      <canvas id="canvas"></canvas>
+    </div>
 
-  <script>
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    <script>
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
 
-    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas') });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById("canvas"),
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
+      const geometry = new THREE.BoxGeometry();
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      const cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
 
-    camera.position.z = 5;
+      camera.position.z = 5;
 
-    function animate() {
-      requestAnimationFrame(animate);
+      function animate() {
+        requestAnimationFrame(animate);
 
-      cube.rotation.x += 0.01;
-      cube.rotation.y += 0.01;
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
 
-      renderer.render(scene, camera);
-    }
+        renderer.render(scene, camera);
+      }
 
-    animate();
-  </script>
-</body>
+      animate();
+    </script>
+  </body>
 </html>
