@@ -1,113 +1,70 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Enhanced VR Toggle Switch</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <style>
-      .progress-bar {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        width: 300px;
-        height: 20px;
-        background: rgba(0, 0, 0, 0.5);
-      }
-      .progress-fill {
-        height: 100%;
-        width: 0;
-        background-color: green;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Progress bar for gaze time feedback -->
-    <div class="progress-bar">
-      <div id="progress" class="progress-fill"></div>
-    </div>
+<head>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+</head>
+<body>
+  <a-scene>
+    <a-box position="0 0 -5" width="5" height="3" depth="5" color="#cccccc"></a-box>
 
-    <a-scene>
-      <!-- Define the switch -->
-      <a-box id="switch" position="0 1.5 -3" depth="0.2" height="0.5" width="0.5" color="#4CC3D9">
-        <a-text value="OFF" position="0 0 0.3" scale="1 1 1" color="#FFFFFF" id="switchText"></a-text>
-      </a-box>
-      
-      <!-- VR Camera with gaze controls -->
-      <a-camera id="camera" position="0 1.6 0" wasd-controls="enabled: false" look-controls="enabled: true">
-      </a-camera>
-      
-      <!-- Sound feedback -->
-      <a-sound id="toggleSound" src="url(https://www.soundjay.com/button/beep-07.wav)" position="0 2 0" autoplay="false"></a-sound>
-    </a-scene>
+    <a-box id="switch" position="0 1 -3" width="0.5" height="0.2" depth="0.2" 
+           color="#ff0000" interactive></a-box>
 
-    <script>
-      // Initialize variables
-      let gazeTimer;
-      let switchElement = document.querySelector("#switch");
-      let switchText = document.querySelector("#switchText");
-      let progressBar = document.querySelector("#progress");
-      let toggleSound = document.querySelector("#toggleSound");
-      let state = "off"; // Initial state is "off"
+    <a-text id="status-text" value="Loading..." position="-0.5 1.5 -3" 
+           color="#000000" align="center"></a-text>
 
-      // Function to send requests
-      function sendToggleRequest(state) {
-        fetch(`https://roomcontrol.glitch.me/toggle-app?state=${state}`)
-          .then(response => response.text())
-          .then(data => console.log(data))
-          .catch(error => console.error('Error:', error));
-      }
+    <a-sphere id="pointer" position="0 1.2 -2.8" radius="0.05" color="#000000"></a-sphere>
+  </a-scene>
 
-      // Function to update the progress bar and handle state change
-      function updateProgressBar(time) {
-        let progress = Math.min(time / 2000, 1);  // Progress bar maxes out at 2 seconds
-        progressBar.style.width = (progress * 100) + "%";
+  <script>
+    const switchEl = document.getElementById("switch");
+    const statusText = document.getElementById("status-text");
+    const apiUrl = "https://roomcontrol.glitch.me/app-status";
+    const toggleUrl = "https://roomcontrol.glitch.me/toggle-app?state=";
 
-        // If time exceeds 2 seconds, toggle the state
-        if (time >= 2000) {
-          if (state === "off") {
-            state = "on";
-            switchElement.setAttribute('color', '#FF5733');
-            switchText.setAttribute('value', 'ON');
-            sendToggleRequest("on");
-            toggleSound.components.sound.playSound();
-          } else {
-            state = "off";
-            switchElement.setAttribute('color', '#4CC3D9');
-            switchText.setAttribute('value', 'OFF');
-            sendToggleRequest("off");
-            toggleSound.components.sound.playSound();
-          }
+    async function fetchStatus() {
+      try {
+        const response = await fetch(apiUrl, { method: 'GET' }); 
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        const data = await response.json();
+        updateSwitch(data.status); 
+      } catch (error) {
+        console.error("Error fetching status:", error);
+        statusText.setAttribute("value", "Error: Failed to fetch status"); 
       }
+    }
 
-      // Function to check gaze interaction
-      function checkGaze() {
-        const camera = document.querySelector('#camera');
-        const switchPosition = switchElement.getAttribute('position');
-        const cameraPosition = camera.getAttribute('position');
-        
-        // Simple distance calculation to check if the user is gazing at the switch
-        const distance = Math.sqrt(Math.pow(cameraPosition.x - switchPosition.x, 2) +
-                                   Math.pow(cameraPosition.y - switchPosition.y, 2) +
-                                   Math.pow(cameraPosition.z - switchPosition.z, 2));
+    function updateSwitch(status) {
+      if (status === "on") {
+        switchEl.setAttribute("color", "#00ff00");
+        statusText.setAttribute("value", "Status: ON");
+      } else {
+        switchEl.setAttribute("color", "#ff0000");
+        statusText.setAttribute("value", "Status: OFF");
+      }
+    }
 
-        if (distance < 2) {  // If the user is within 2 meters of the switch
-          // Start timer when gaze is within range
-          if (!gazeTimer) {
-            gazeTimer = Date.now();
-          }
-
-          // Update progress bar as the user gazes
-          let elapsedTime = Date.now() - gazeTimer;
-          updateProgressBar(elapsedTime);
-        } else {
-          // Reset progress if the user moves away
-          gazeTimer = null;
-          progressBar.style.width = "0%";
+    async function toggleSwitch() {
+      const currentStatus = statusText.getAttribute("value").includes("ON") ? "off" : "on";
+      try {
+        const response = await fetch(toggleUrl + currentStatus, { method: 'GET' });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        updateSwitch(currentStatus);
+      } catch (error) {
+        console.error("Error toggling status:", error);
+        statusText.setAttribute("value", "Error: Failed to toggle state"); 
       }
+    }
 
-      // Continuously check for gaze
-      setInterval(checkGaze, 100);
-    </script>
-  </body>
+    switchEl.addEventListener("click", () => {
+      toggleSwitch();
+    });
+
+    fetchStatus();
+  </script>
+</body>
 </html>
