@@ -1,91 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Switch Toggle</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
 </head>
-<body style="margin: 0; overflow: hidden;">
-  
-  <a-scene embedded arjs cursor="rayOrigin: mouse" raycaster="objects: .clickable">
-    
-    <!-- Hiro Marker -->
-    <a-marker preset="hiro">
-      
-      <!-- Toggle Switch (Smaller & Clickable) -->
-      <a-cylinder id="switch" class="clickable"
-                  position="0 0.1 0" radius="0.1" height="0.05"
-                  color="#ff0000">
-        <a-animation attribute="scale" from="1 1 1" to="1.2 1.2 1.2" direction="alternate"
-                     repeat="indefinite" dur="600"></a-animation>
-      </a-cylinder>
+<body>
 
-      <!-- Status Text -->
-      <a-text id="status-text" value="Loading..." position="-0.4 0.4 0" 
-              color="white" align="center" scale="0.5 0.5 0.5"></a-text>
+<script>
+  let scene, camera, renderer, switchObject, clock, raycaster, mouse, backgroundTexture;
+  let isSwitchOn = false; // Initial state of the switch
+  const apiUrl = "https://roomcontrol.glitch.me/app-status";
+  const toggleUrl = "https://roomcontrol.glitch.me/toggle-app?state=";
 
-    </a-marker>
+  // Initialize Three.js scene
+  function init() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    <!-- Camera -->
-    <a-entity camera position="0 0 2">
-      <!-- Cursor for clicking -->
-      <a-cursor color="white"></a-cursor>
-    </a-entity>
-    
-  </a-scene>
+    // Raycaster and mouse for click detection
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
 
-  <script>
-    const switchEl = document.getElementById("switch");
-    const statusText = document.getElementById("status-text");
-    const apiUrl = "https://roomcontrol.glitch.me/app-status";
-    const toggleUrl = "https://roomcontrol.glitch.me/toggle-app?state=";
+    // Set background (360-degree image)
+    const loader = new THREE.TextureLoader();
+    loader.load('https://cdn.pixabay.com/photo/2015/09/18/19/03/earth-944285_960_720.jpg', function(texture) {
+      scene.background = texture;
+    });
 
-    // Fetch current status from API
-    async function fetchStatus() {
-      try {
-        const response = await fetch(apiUrl, { method: 'GET' });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    // Create a more interactive 3D box (the switch)
+    const geometry = new THREE.BoxGeometry(1, 0.3, 0.1); // Increased size for better clickability
+    const material = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x111111, roughness: 0.4, metalness: 0.6 });
+    switchObject = new THREE.Mesh(geometry, material);
+    switchObject.position.set(0, 0, -2);
+    scene.add(switchObject);
 
-        const data = await response.json();
-        updateSwitch(data.status);
-      } catch (error) {
-        console.error("Error fetching status:", error);
-        statusText.setAttribute("value", "Error: Failed to fetch status");
-      }
+    // Add a light source to illuminate the scene
+    const light = new THREE.AmbientLight(0x404040, 2);  // Soft ambient light
+    scene.add(light);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);  // Directional light for shadows
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+
+    // Set camera position
+    camera.position.z = 5;
+
+    // Listen to mouse movement and click events
+    window.addEventListener('mousemove', onMouseMove, false);
+    window.addEventListener('click', onMouseClick, false);
+
+    // Start rendering the scene
+    animate();
+    fetchStatus();  // Fetch initial status of the switch
+  }
+
+  // Animation loop
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+
+  // Handle mouse movement (for raycasting)
+  function onMouseMove(event) {
+    event.preventDefault();
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+  }
+
+  // Handle mouse click
+  function onMouseClick(event) {
+    // Raycast to detect if the switch is clicked
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(switchObject);
+
+    if (intersects.length > 0) {
+      toggleSwitch();
     }
+  }
 
-    // Update switch color & status text
-    function updateSwitch(status) {
-      if (status === "on") {
-        switchEl.setAttribute("color", "#00ff00"); // Green for ON
-        statusText.setAttribute("value", "Status: ON");
-      } else {
-        switchEl.setAttribute("color", "#ff0000"); // Red for OFF
-        statusText.setAttribute("value", "Status: OFF");
+  // Fetch the current status of the switch from API
+  async function fetchStatus() {
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        throw new Error('Error fetching status');
       }
+      const data = await response.json();
+      updateSwitch(data.status);
+    } catch (error) {
+      console.error('Error fetching status:', error);
     }
+  }
 
-    // Toggle switch status via API
-    async function toggleSwitch() {
-      const currentStatus = statusText.getAttribute("value").includes("ON") ? "off" : "on";
-      try {
-        const response = await fetch(toggleUrl + currentStatus, { method: 'GET' });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-
-        updateSwitch(currentStatus);
-      } catch (error) {
-        console.error("Error toggling status:", error);
-        statusText.setAttribute("value", "Error: Failed to toggle state");
+  // Toggle the switch (simulates clicking)
+  async function toggleSwitch() {
+    const currentStatus = isSwitchOn ? 'off' : 'on';
+    try {
+      const response = await fetch(toggleUrl + currentStatus);
+      if (!response.ok) {
+        throw new Error('Error toggling switch');
       }
+      updateSwitch(currentStatus);
+    } catch (error) {
+      console.error('Error toggling switch:', error);
     }
+  }
 
-    // Click listener for the switch
-    switchEl.addEventListener("click", toggleSwitch);
+  // Update the switch color based on the status
+  function updateSwitch(status) {
+    isSwitchOn = (status === 'on');
+    switchObject.material.color.set(isSwitchOn ? 0x00ff00 : 0xff0000);  // Green for ON, Red for OFF
+  }
 
-    // Fetch initial switch status
-    fetchStatus();
-  </script>
+  // Initialize the Three.js scene
+  init();
+</script>
 
 </body>
 </html>
