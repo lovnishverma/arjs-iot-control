@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Switch Toggle</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -14,7 +13,7 @@
 <body>
 
 <script>
-  let scene, camera, renderer, switchObject, clock, raycaster, mouse, backgroundSphere, controls;
+  let scene, camera, renderer, switchObject, clock, raycaster, mouse, backgroundSphere;
   let isSwitchOn = false; // Initial state of the switch
   const apiUrl = "https://roomcontrol.glitch.me/app-status";
   const toggleUrl = "https://roomcontrol.glitch.me/toggle-app?state=";
@@ -26,12 +25,6 @@
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-
-    // Add OrbitControls to allow user to rotate the camera
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.25;
-    controls.screenSpacePanning = false;
 
     // Raycaster and mouse for click detection
     raycaster = new THREE.Raycaster();
@@ -81,8 +74,10 @@
   function animate() {
     requestAnimationFrame(animate);
 
-    // Update controls for damping effect (smooth movement)
-    controls.update(); // Only required if controls.enableDamping = true
+    // Rotate the sphere to simulate movement
+    if (backgroundSphere) {
+      backgroundSphere.rotation.y += 0.001; // Adjust speed here
+    }
 
     renderer.render(scene, camera);
   }
