@@ -1,19 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
 </head>
-<body>
-  <a-scene>
-    <a-box position="0 0 -5" width="5" height="3" depth="5" color="#cccccc"></a-box>
+<body style="margin: 0; overflow: hidden;">
+  
+  <a-scene embedded arjs cursor="rayOrigin: mouse" raycaster="objects: .clickable">
+    
+    <!-- Hiro Marker -->
+    <a-marker preset="hiro">
+      
+      <!-- Toggle Switch (Smaller & Clickable) -->
+      <a-cylinder id="switch" class="clickable"
+                  position="0 0.1 0" radius="0.1" height="0.05"
+                  color="#ff0000">
+        <a-animation attribute="scale" from="1 1 1" to="1.2 1.2 1.2" direction="alternate"
+                     repeat="indefinite" dur="600"></a-animation>
+      </a-cylinder>
 
-    <a-box id="switch" position="0 1 -3" width="0.5" height="0.2" depth="0.2" 
-           color="#ff0000" interactive></a-box>
+      <!-- Status Text -->
+      <a-text id="status-text" value="Loading..." position="-0.4 0.4 0" 
+              color="white" align="center" scale="0.5 0.5 0.5"></a-text>
 
-    <a-text id="status-text" value="Loading..." position="-0.5 1.5 -3" 
-           color="#000000" align="center"></a-text>
+    </a-marker>
 
-    <a-sphere id="pointer" position="0 1.2 -2.8" radius="0.05" color="#000000"></a-sphere>
+    <!-- Camera -->
+    <a-entity camera position="0 0 2">
+      <!-- Cursor for clicking -->
+      <a-cursor color="white"></a-cursor>
+    </a-entity>
+    
   </a-scene>
 
   <script>
@@ -22,49 +41,51 @@
     const apiUrl = "https://roomcontrol.glitch.me/app-status";
     const toggleUrl = "https://roomcontrol.glitch.me/toggle-app?state=";
 
+    // Fetch current status from API
     async function fetchStatus() {
       try {
-        const response = await fetch(apiUrl, { method: 'GET' }); 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        const response = await fetch(apiUrl, { method: 'GET' });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
         const data = await response.json();
-        updateSwitch(data.status); 
+        updateSwitch(data.status);
       } catch (error) {
         console.error("Error fetching status:", error);
-        statusText.setAttribute("value", "Error: Failed to fetch status"); 
+        statusText.setAttribute("value", "Error: Failed to fetch status");
       }
     }
 
+    // Update switch color & status text
     function updateSwitch(status) {
       if (status === "on") {
-        switchEl.setAttribute("color", "#00ff00");
+        switchEl.setAttribute("color", "#00ff00"); // Green for ON
         statusText.setAttribute("value", "Status: ON");
       } else {
-        switchEl.setAttribute("color", "#ff0000");
+        switchEl.setAttribute("color", "#ff0000"); // Red for OFF
         statusText.setAttribute("value", "Status: OFF");
       }
     }
 
+    // Toggle switch status via API
     async function toggleSwitch() {
       const currentStatus = statusText.getAttribute("value").includes("ON") ? "off" : "on";
       try {
         const response = await fetch(toggleUrl + currentStatus, { method: 'GET' });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
         updateSwitch(currentStatus);
       } catch (error) {
         console.error("Error toggling status:", error);
-        statusText.setAttribute("value", "Error: Failed to toggle state"); 
+        statusText.setAttribute("value", "Error: Failed to toggle state");
       }
     }
 
-    switchEl.addEventListener("click", () => {
-      toggleSwitch();
-    });
+    // Click listener for the switch
+    switchEl.addEventListener("click", toggleSwitch);
 
+    // Fetch initial switch status
     fetchStatus();
   </script>
+
 </body>
 </html>
