@@ -1,156 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Switch Toggle</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
-  </style>
-</head>
-<body>
-
-<script>
-  let scene, camera, renderer, switchObject, clock, raycaster, mouse, backgroundSphere;
-  let isSwitchOn = false; // Initial state of the switch
-  const apiUrl = "https://roomcontrol.glitch.me/app-status";
-  const toggleUrl = "https://roomcontrol.glitch.me/toggle-app?state=";
-
-  // Initialize Three.js scene
-  function init() {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Raycaster and mouse for click detection
-    raycaster = new THREE.Raycaster();
-    mouse = new THREE.Vector2();
-
-    // Load 360-degree image as a background sphere
-    const loader = new THREE.TextureLoader();
-    loader.load('https://cdn.glitch.global/9643226b-b70f-4c02-8018-2513b74927a2/INDEX_BG.jpg?v=1687869875794', function(texture) {
-      const geometry = new THREE.SphereGeometry(100, 64, 64);
-      const material = new THREE.MeshBasicMaterial({
-        map: texture,
-        side: THREE.BackSide, // Map the texture to the inside of the sphere
-      });
-      backgroundSphere = new THREE.Mesh(geometry, material);
-      scene.add(backgroundSphere);
-    });
-
-    // Create the 3D switch with added lighting effects
-    const geometry = new THREE.BoxGeometry(1, 0.3, 0.1);
-    const material = new THREE.MeshStandardMaterial({
-      color: 0xff0000,
-      emissive: 0x111111,
-      roughness: 0.4,
-      metalness: 0.6
-    });
-    switchObject = new THREE.Mesh(geometry, material);
-    switchObject.position.set(0, 0, -2);
-    scene.add(switchObject);
-
-    // Add a light source to illuminate the scene
-    const ambientLight = new THREE.AmbientLight(0x404040, 2);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-    directionalLight.position.set(5, 5, 5);
-    scene.add(directionalLight);
-
-    // Set camera position and set to look at the switch
-    camera.position.set(0, 0, 5);
-    camera.lookAt(0, 0, 0); 
-
-    // Add event listeners for mouse movement and click detection
-    window.addEventListener('mousemove', onMouseMove, false);
-    window.addEventListener('click', onMouseClick, false);
-
-    // Start rendering the scene
-    animate();
-    fetchStatus(); // Fetch initial status of the switch
-  }
-
-  // Animation loop
-  function animate() {
-    requestAnimationFrame(animate);
-
-    // Rotate the background sphere for a dynamic effect
-    if (backgroundSphere) {
-      backgroundSphere.rotation.y += 0.001; // Adjust speed here
-    }
-
-    // Check if the mouse is hovering over the switch for a hover effect
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(switchObject);
-    if (intersects.length > 0) {
-      switchObject.material.emissive.set(0x333333);  // Change emissive color on hover
-    } else {
-      switchObject.material.emissive.set(0x111111);  // Reset color when not hovering
-    }
-
-    renderer.render(scene, camera);
-  }
-
-  // Handle mouse movement (for raycasting)
-  function onMouseMove(event) {
-    event.preventDefault();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-  }
-
-  // Handle mouse click to toggle the switch
-  function onMouseClick(event) {
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(switchObject);
-
-    if (intersects.length > 0) {
-      toggleSwitch();
-    }
-  }
-
-  // Fetch the current status of the switch from the API
-  async function fetchStatus() {
-    try {
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error('Error fetching status');
-      }
-      const data = await response.json();
-      updateSwitch(data.status);
-    } catch (error) {
-      console.error('Error fetching status:', error);
-    }
-  }
-
-  // Toggle the switch (simulates clicking)
-  async function toggleSwitch() {
-    const currentStatus = isSwitchOn ? 'off' : 'on';
-    try {
-      const response = await fetch(toggleUrl + currentStatus);
-      if (!response.ok) {
-        throw new Error('Error toggling switch');
-      }
-      updateSwitch(currentStatus);
-    } catch (error) {
-      console.error('Error toggling switch:', error);
-    }
-  }
-
-  // Update the switch appearance based on the status
-  function updateSwitch(status) {
-    isSwitchOn = (status === 'on');
-    switchObject.material.color.set(isSwitchOn ? 0x00ff00 : 0xff0000);  // Green for ON, Red for OFF
-    switchObject.scale.set(isSwitchOn ? 1.1 : 1, 1, 1);  // Slightly enlarge the switch when ON
-  }
-
-  // Initialize the Three.js scene
-  init();
-</script>
-
-</body>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://rawgit.com/jeromeetienne/AR.js/1.7.2/aframe/build/aframe-ar.min.js"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene embedded arjs>
+      <!-- Custom marker -->
+      <a-marker-camera preset="custom" url="your-marker.patt">
+        <a-box position="0 0.5 0" material="color: red;"></a-box>
+      </a-marker-camera>
+      
+      <!-- Default AR.js camera -->
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
 </html>
