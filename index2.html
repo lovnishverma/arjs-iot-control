@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.js"></script>
+  <script>
+    // Register a raycaster component for click detection
+    AFRAME.registerComponent('clickable', {
+      init: function () {
+        this.el.addEventListener('click', function (evt) {
+          // Call toggle function when the element is clicked
+          const currentColor = this.getAttribute('material').color;
+          toggleSwitch(currentColor === '#4CAF50' ? 'off' : 'on');
+        });
+      }
+    });
+  </script>
+</head>
+<body style="margin: 0px; overflow: hidden">
+  <a-scene stats embedded arjs="trackingMethod: best; sourceType: webcam;">
+    <a-marker preset="hiro" id="marker">
+      <a-box id="switch" position="0 0.5 0" width="1" height="0.2" depth="1" material="color: #4CAF50;" scale="1 1 1" clickable></a-box>
+    </a-marker>
+    <a-camera></a-camera>
+  </a-scene>
+
+  <script>
+    const switchElement = document.querySelector('#switch');
+    const markerElement = document.querySelector('#marker');
+    let currentStatus = 'off'; // Store the current status
+
+    // Fetch the current status from the API
+    async function fetchStatus() {
+      try {
+        const response = await fetch('https://roomcontrol.glitch.me/app-status');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const status = await response.json(); // Changed to parse JSON response
+        console.log("Fetched status:", status); // Debugging log
+        return status.status; // Use 'status' key from the API response
+      } catch (error) {
+        console.error("Error fetching status:", error);
+        return currentStatus; // Return the last known status if fetch fails
+      }
+    }
+
+    // Update the switch color based on the fetched status
+    async function updateSwitch() {
+      const status = await fetchStatus();
+      currentStatus = status; // Update currentStatus
+      const color = status === 'on' ? '#4CAF50' : '#F44336';
+      switchElement.setAttribute('material', 'color: ' + color);
+      console.log('Switch status updated to:', status); // Debugging line
+    }
+
+    // Toggle the switch state via the API
+    async function toggleSwitch(state) {
+      try {
+        const response = await fetch(`https://roomcontrol.glitch.me/toggle-app?state=${state}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        await updateSwitch(); // Update after successful toggle
+        console.log(`Switch toggled to: ${state}`); // Debugging line
+      } catch (error) {
+        console.error("Error toggling switch:", error);
+      }
+    }
+
+    // Listen for marker detection
+    markerElement.addEventListener('markerFound', async function () {
+      console.log('Marker found!');
+      await updateSwitch(); // Update switch when marker is found
+    });
+
+    // Listen for marker loss
+    markerElement.addEventListener('markerLost', function () {
+      console.log('Marker lost!');
+      // Optionally, keep last state or reset color
+      // switchElement.setAttribute('material', 'color: gray');
+    });
+
+    // Initialize the switch on page load
+    window.onload = async function() {
+      await updateSwitch(); // Update on page load
+    };
+  </script>
+</body>
+</html>
