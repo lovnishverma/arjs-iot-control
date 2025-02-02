@@ -1,20 +1,71 @@
 <!DOCTYPE html>
-<html>
-  <head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR/VR IoT Controller</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
-  </head>
-  <body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs="detectionMode: mono_and_matrix; sourceType: webcam;">
-      
-      <!-- Custom marker -->
-      <a-marker type="pattern" url="https://cdn.glitch.global/eb54fc9b-85aa-4348-a627-23feaa8827c1/nielit.patt">
-        <a-box position="0 0.5 0" material="color: red;"></a-box>
-      </a-marker>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ar.js/2.1.1/aframe-ar.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        a-frame { width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; resolution: 1080;">
 
-      <!-- AR.js Camera -->
-      <a-entity camera></a-entity>
+        <!-- AR Marker -->
+        <a-marker type="pattern" url="https://raw.githubusercontent.com/lovnishverma/datasets/refs/heads/main/nielit.patt" id="marker">
+            
+            <!-- 3D model of the switch -->
+            <a-box position="0 0.5 0" width="1" height="1" depth="1" color="#4CAF50" id="switch"
+                   event-set__enter="_event: mouseenter; color: #FFC107" 
+                   event-set__leave="_event: mouseleave; color: #4CAF50"></a-box>
+        </a-marker>
 
+        <!-- Camera with adjusted zoom and quality -->
+        <a-camera position="0 0 4" fov="60" near="0.5" far="10"></a-camera>
     </a-scene>
-  </body>
+
+    <script>
+        // Fetch the current status of the switch
+        async function fetchStatus() {
+            const response = await fetch('https://roomcontrol.glitch.me/app-status');
+            const status = await response.text();
+            return status;
+        }
+
+        // Update the switch's appearance based on the status
+        async function updateSwitch() {
+            const status = await fetchStatus();
+            const switchElement = document.querySelector('#switch');
+            if (status === 'on') {
+                switchElement.setAttribute('color', '#4CAF50'); // Green for ON
+            } else {
+                switchElement.setAttribute('color', '#F44336'); // Red for OFF
+            }
+        }
+
+        // Toggle the switch state
+        async function toggleSwitch(state) {
+            const response = await fetch(`https://roomcontrol.glitch.me/toggle-app?state=${state}`);
+            if (response.ok) {
+                updateSwitch(); // Update switch appearance after toggling
+            }
+        }
+
+        // Update the switch status on load
+        window.onload = updateSwitch;
+
+        // Add event listeners to the box for turning ON and OFF
+        document.querySelector('#switch').addEventListener('click', function () {
+            const currentColor = document.querySelector('#switch').getAttribute('color');
+            if (currentColor === '#4CAF50') {
+                toggleSwitch('off'); // Turn OFF
+            } else {
+                toggleSwitch('on'); // Turn ON
+            }
+        });
+    </script>
+</body>
 </html>
