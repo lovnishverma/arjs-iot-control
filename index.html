@@ -8,8 +8,8 @@
     <a-scene stats embedded arjs="trackingMethod: best; sourceType: webcam;">
       <!-- Hiro Marker -->
       <a-marker preset="hiro" id="hero-marker">
-        <!-- 3D Box to show when marker is detected, now positioned above the marker -->
-        <a-box id="switch-box" position="0 0.6 0" material="color: red; opacity: 0.5;" scale="1 1 1"></a-box>
+        <!-- 3D Box to show when marker is detected -->
+        <a-box id="switch-box" position="0 0.5 0" material="color: red; opacity: 0.5;" scale="1 1 1"></a-box>
       </a-marker>
 
       <!-- Camera -->
@@ -20,24 +20,15 @@
       const switchBox = document.getElementById('switch-box');
       const heroMarker = document.getElementById('hero-marker');
 
-      let debounceTimer;  // To store debounce timer
-      const debounceDelay = 500;  // 500ms delay for debouncing
-
       // Check for the marker and update the switch state accordingly
       heroMarker.addEventListener('markerFound', function () {
         console.log('Marker found!');
-        clearTimeout(debounceTimer);  // Clear any existing timer
-        debounceTimer = setTimeout(() => {
-          updateSwitchState('on');
-        }, debounceDelay);  // Call after 500ms
+        updateSwitchState('on');
       });
 
       heroMarker.addEventListener('markerLost', function () {
         console.log('Marker lost!');
-        clearTimeout(debounceTimer);  // Clear any existing timer
-        debounceTimer = setTimeout(() => {
-          updateSwitchState('off');
-        }, debounceDelay);  // Call after 500ms
+        updateSwitchState('off');
       });
 
       // Function to call the API and update the switch state
