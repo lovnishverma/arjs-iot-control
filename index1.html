@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.js"></script>
+  </head>
+  <body style="margin: 0px; overflow: hidden">
+    <a-scene stats embedded arjs="trackingMethod: best; sourceType: webcam;">
+      <!-- Hiro Marker -->
+      <a-marker preset="hiro">
+        <!-- 3D Box to show when marker is detected -->
+        <a-box id="switch" position="0 0.5 0" material="color: red; opacity: 0.5;" scale="1 1 1"></a-box>
+      </a-marker>
+
+      <!-- Camera -->
+      <a-camera></a-camera>
+    </a-scene>
+
+    <script>
+      // Ensure camera is properly set up and marker detection works
+      const marker = document.querySelector('a-marker');
+      const switchElement = document.querySelector('#switch');
+      
+      // Set initial visibility of switch to false
+      switchElement.setAttribute('visible', false);
+
+      // Debugging when marker is found
+      marker.addEventListener('markerFound', function () {
+        console.log('Marker found!');
+        switchElement.setAttribute('visible', true); // Show the switch when marker is found
+      });
+
+      // Debugging when marker is lost
+      marker.addEventListener('markerLost', function () {
+        console.log('Marker lost!');
+        switchElement.setAttribute('visible', false); // Hide the switch when marker is lost
+      });
+    </script>
+  </body>
+</html>

@@ -1,40 +1,88 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.js"></script>
-  </head>
-  <body style="margin: 0px; overflow: hidden">
-    <a-scene stats embedded arjs="trackingMethod: best; sourceType: webcam;">
-      <!-- Hiro Marker -->
-      <a-marker preset="hiro">
-        <!-- 3D Box to show when marker is detected -->
-        <a-box id="switch" position="0 0.5 0" material="color: red; opacity: 0.5;" scale="1 1 1"></a-box>
-      </a-marker>
+<head>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.js"></script>
+  <script>
+    // Register a raycaster component for click detection
+    AFRAME.registerComponent('clickable', {
+      init: function () {
+        this.el.addEventListener('click', function (evt) {
+          // Call toggle function when the element is clicked
+          const currentColor = this.getAttribute('material').color;
+          toggleSwitch(currentColor === '#4CAF50' ? 'off' : 'on');
+        });
+      }
+    });
 
-      <!-- Camera -->
-      <a-camera></a-camera>
-    </a-scene>
+    // Function to toggle the switch state via API
+    async function toggleSwitch(state) {
+      try {
+        const response = await fetch(`https://roomcontrol.glitch.me/toggle-app?state=${state}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        await updateSwitch(); // Update switch after successful toggle
+        console.log(`Switch toggled to: ${state}`); // Debugging line
+      } catch (error) {
+        console.error("Error toggling switch:", error);
+      }
+    }
 
-    <script>
-      // Ensure camera is properly set up and marker detection works
-      const marker = document.querySelector('a-marker');
-      const switchElement = document.querySelector('#switch');
-      
-      // Set initial visibility of switch to false
-      switchElement.setAttribute('visible', false);
+    // Fetch current status from the API
+    async function fetchStatus() {
+      try {
+        const response = await fetch('https://roomcontrol.glitch.me/app-status');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const status = await response.json();
+        console.log("Fetched status:", status); // Debugging log
+        return status.status;
+      } catch (error) {
+        console.error("Error fetching status:", error);
+        return 'off'; // Default to 'off' if fetch fails
+      }
+    }
 
-      // Debugging when marker is found
-      marker.addEventListener('markerFound', function () {
-        console.log('Marker found!');
-        switchElement.setAttribute('visible', true); // Show the switch when marker is found
-      });
+    // Update the switch color based on the fetched status
+    async function updateSwitch() {
+      const status = await fetchStatus();
+      const color = status === 'on' ? '#4CAF50' : '#F44336';
+      switchElement.setAttribute('material', 'color: ' + color);
+      console.log('Switch status updated to:', status); // Debugging line
+    }
 
-      // Debugging when marker is lost
-      marker.addEventListener('markerLost', function () {
-        console.log('Marker lost!');
-        switchElement.setAttribute('visible', false); // Hide the switch when marker is lost
-      });
-    </script>
-  </body>
+    // Initialize on page load
+    window.onload = async function() {
+      await updateSwitch(); // Update on page load
+    };
+
+    // Listen for marker detection and update switch
+    markerElement.addEventListener('markerFound', async function () {
+      console.log('Marker found!');
+      await updateSwitch();
+    });
+
+    // Listen for marker loss
+    markerElement.addEventListener('markerLost', function () {
+      console.log('Marker lost!');
+    });
+
+    const switchElement = document.querySelector('#switch');
+    const markerElement = document.querySelector('#marker');
+  </script>
+</head>
+<body style="margin: 0px; overflow: hidden">
+  <a-scene stats embedded arjs="trackingMethod: best; sourceType: webcam;">
+    <a-marker preset="hiro" id="marker">
+      <a-box id="switch" position="0 0.5 0" width="1" height="0.2" depth="1" material="color: #4CAF50;" scale="1 1 1" clickable></a-box>
+    </a-marker>
+    <a-camera></a-camera>
+  </a-scene>
+
+  <!-- Button to toggle switch programmatically -->
+  <button onclick="toggleSwitch('on')">Turn On</button>
+  <button onclick="toggleSwitch('off')">Turn Off</button>
+</body>
 </html>
