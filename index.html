@@ -13,14 +13,12 @@
 </head>
 <body>
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; resolution: 1080;">
-
-        <!-- AR Marker -->
-        <a-marker type="pattern" url="https://raw.githubusercontent.com/lovnishverma/datasets/refs/heads/main/nielit.patt" id="marker">
-            
+        
+        <!-- Default Hiro marker -->
+        <a-marker preset="hiro" id="marker">
             <!-- 3D model of the switch -->
-            <a-box position="0 0.5 0" width="1" height="1" depth="1" color="#4CAF50" id="switch"
-                   event-set__enter="_event: mouseenter; color: #FFC107" 
-                   event-set__leave="_event: mouseleave; color: #4CAF50"></a-box>
+            <a-box position="0 0.5 0" width="1" height="1" depth="1" color="#4CAF50" id="switch">
+            </a-box>
         </a-marker>
 
         <!-- Camera with adjusted zoom and quality -->
@@ -65,6 +63,15 @@
             } else {
                 toggleSwitch('on'); // Turn ON
             }
+        });
+
+        // Debugging: Check if marker is being detected
+        const marker = document.querySelector('#marker');
+        marker.addEventListener('markerFound', () => {
+            console.log('Marker detected!');
+        });
+        marker.addEventListener('markerLost', () => {
+            console.log('Marker lost!');
         });
     </script>
 </body>
