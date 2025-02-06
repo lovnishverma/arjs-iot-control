@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR Switch Control</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      .loading {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loading" id="loading-message">Waiting for marker...</div>
+    
+    <a-scene stats embedded arjs="trackingMethod: best; sourceType: webcam;">
+      <!-- Hiro Marker -->
+      <a-marker preset="hiro" id="hero-marker">
+        <!-- 3D Box to show when marker is detected -->
+        <a-box
+          id="switch-box"
+          position="0 0.5 0"
+          material="color: red; opacity: 0.8;"
+          scale="1 1 1"
+        ></a-box>
+      </a-marker>
+
+      <!-- Camera -->
+      <a-camera></a-camera>
+    </a-scene>
+
+    <script>
+      const switchBox = document.getElementById('switch-box');
+      const heroMarker = document.getElementById('hero-marker');
+      const loadingMessage = document.getElementById('loading-message');
+
+      // Event listener for marker detection
+      heroMarker.addEventListener('markerFound', () => {
+        console.log('Marker found!');
+        loadingMessage.textContent = 'Marker detected. Switch is ON.';
+        updateSwitchState('on');
+      });
+
+      // Event listener for marker lost
+      heroMarker.addEventListener('markerLost', () => {
+        console.log('Marker lost!');
+        loadingMessage.textContent = 'Marker lost. Switch is OFF.';
+        updateSwitchState('off');
+      });
+
+      // Function to call the API and update the switch state
+      async function updateSwitchState(state) {
+        const url = `https://roomcontrol.glitch.me/toggle-app?state=${state}`;
+        
+        try {
+          const response = await fetch(url);
+          const data = await response.text(); // Handle plain text response
+          console.log(data);
+
+          switch (data) {
+            case 'App turned on':
+              switchBox.setAttribute('material', 'color', 'green'); // Switch ON: change box color to green
+              console.log('Switch is now ON');
+              break;
+            case 'App turned off':
+              switchBox.setAttribute('material', 'color', 'red'); // Switch OFF: change box color to red
+              console.log('Switch is now OFF');
+              break;
+            default:
+              console.warn('Unexpected response:', data);
+          }
+        } catch (error) {
+          console.error('Error updating switch state:', error);
+          loadingMessage.textContent = 'Error connecting to server.';
+        }
+      }
+    </script>
+  </body>
+</html>
