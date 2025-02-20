@@ -1,34 +1,37 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.js"></script>
-  </head>
+  <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+  <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.6.0/aframe/build/aframe-ar.js"></script>
   <body style="margin: 0px; overflow: hidden">
-    <a-scene stats embedded arjs="trackingMethod: best; sourceType: webcam;">
-      <!-- Hiro Marker -->
-      <a-marker preset="hiro" id="hero-marker">
-        <!-- 3D Box to show when marker is detected -->
-        <a-box id="switch-box" position="0 0.5 0" material="color: red; opacity: 0.5;" scale="1 1 1"></a-box>
+    <a-scene embedded arjs="sourceType: webcam;">
+      <a-marker type="pattern" url="https://cdn.glitch.global/b9ef9744-cb5d-4668-ab95-61316b0c0b84/pattern-nielit.png?v=1740069073946">
+        <a-box position="0 0.5 0" material="color: red;"></a-box>
       </a-marker>
-
-      <!-- Camera -->
-      <a-camera></a-camera>
+      <a-marker preset="hiro" id="hero-marker">
+        <a-box position="0 0.5 0" material="color: green;"></a-box>
+      </a-marker>
+      <a-marker type="barcode" value="5">
+        <a-box
+          position="0 0.5 0"
+          material="color: blue;"
+          id="switch-box"
+        ></a-box>
+      </a-marker>
+      <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-      const switchBox = document.getElementById('switch-box');
-      const heroMarker = document.getElementById('hero-marker');
+      const switchBox = document.getElementById("switch-box");
+      const heroMarker = document.getElementById("hero-marker");
 
       // Check for the marker and update the switch state accordingly
-      heroMarker.addEventListener('markerFound', function () {
-        console.log('Marker found!');
-        updateSwitchState('on');
+      heroMarker.addEventListener("markerFound", function () {
+        console.log("Marker found!");
+        updateSwitchState("on");
       });
 
-      heroMarker.addEventListener('markerLost', function () {
-        console.log('Marker lost!');
-        updateSwitchState('off');
+      heroMarker.addEventListener("markerLost", function () {
+        console.log("Marker lost!");
+        updateSwitchState("off");
       });
 
       // Function to call the API and update the switch state
@@ -36,19 +39,19 @@
         const url = `https://roomcontrol.glitch.me/toggle-app?state=${state}`;
 
         fetch(url)
-          .then((response) => response.text())  // Use .text() instead of .json() to handle plain text response
+          .then((response) => response.text()) // Use .text() instead of .json() to handle plain text response
           .then((data) => {
-            console.log(data);  // Log the response from the server (e.g., "App turned on" or "App turned off")
+            console.log(data); // Log the response from the server (e.g., "App turned on" or "App turned off")
             if (data === "App turned on") {
               console.log("Switch is now ON");
-              switchBox.setAttribute('material', 'color', 'green');  // Change box color to green when ON
+              switchBox.setAttribute("material", "color", "green"); // Change box color to green when ON
             } else if (data === "App turned off") {
               console.log("Switch is now OFF");
-              switchBox.setAttribute('material', 'color', 'red');  // Change box color to red when OFF
+              switchBox.setAttribute("material", "color", "red"); // Change box color to red when OFF
             }
           })
           .catch((error) => {
-            console.error('Error updating switch state:', error);
+            console.error("Error updating switch state:", error);
           });
       }
     </script>
