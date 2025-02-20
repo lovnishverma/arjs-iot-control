@@ -88,7 +88,6 @@ This project is licensed under the **MIT License**. Feel free to modify and dist
 
 **Lovnish Verma**  
 [GitHub](https://github.com/lovnishverma)  
-[Website](https://lovnishverma.glitch.me)
-[GitHub](https://github.com/lovnishverma)  
+[Website](https://lovnishverma.glitch.me) 
 [Website](https://lovnishverma.glitch.me)  
 
