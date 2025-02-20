@@ -1,56 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://cdn.glitch.global/b9ef9744-cb5d-4668-ab95-61316b0c0b84/pattern-nielit.png?v=1740069073946"
+    />
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js/aframe/build/aframe-ar.min.js"></script>
   </head>
   <body style="margin: 0px; overflow: hidden">
-    <a-scene stats embedded arjs="trackingMethod: best; sourceType: webcam;">
-      <!-- Custom Marker -->
-      <a-marker type="pattern" url="https://cdn.glitch.global/b9ef9744-cb5d-4668-ab95-61316b0c0b84/pattern-nielit.patt" id="nielit-marker">
-        <!-- 3D Box to show when marker is detected -->
-        <a-box id="switch-box" position="0 0.5 0" material="color: red; opacity: 0.5;" scale="1 1 1"></a-box>
+    <a-scene embedded arjs="trackingMethod: best; sourceType: webcam;">
+      <!-- Custom Marker (Pattern) -->
+      <a-marker
+        type="pattern"
+        url="https://cdn.glitch.global/b9ef9744-cb5d-4668-ab95-61316b0c0b84/pattern-nielit.patt?v=1740070838081"
+        id="nielit-marker"
+      >
+        <!-- 3D Box -->
+        <a-box
+          id="switch-box"
+          position="0 0.5 0"
+          material="color: red; opacity: 0.7;"
+          scale="1 1 1"
+        ></a-box>
       </a-marker>
 
       <!-- Camera -->
-      <a-camera></a-camera>
+      <a-camera position="0 0 0"></a-camera>
     </a-scene>
 
     <script>
-      const switchBox = document.getElementById('switch-box');
-      const nielitMarker = document.getElementById('nielit-marker');
+      document.addEventListener("DOMContentLoaded", function () {
+        const switchBox = document.getElementById("switch-box");
+        const nielitMarker = document.getElementById("nielit-marker");
 
-      // Check for the marker and update the switch state accordingly
-      nielitMarker.addEventListener('markerFound', function () {
-        console.log('NIELIT Marker found!');
-        updateSwitchState('on');
-      });
-
-      nielitMarker.addEventListener('markerLost', function () {
-        console.log('NIELIT Marker lost!');
-        updateSwitchState('off');
-      });
-
-      // Function to call the API and update the switch state
-      function updateSwitchState(state) {
-        const url = `https://roomcontrol.glitch.me/toggle-app?state=${state}`;
-
-        fetch(url)
-          .then((response) => response.text())  // Use .text() instead of .json() to handle plain text response
-          .then((data) => {
-            console.log(data);  // Log the response from the server (e.g., "App turned on" or "App turned off")
-            if (data === "App turned on") {
-              console.log("Switch is now ON");
-              switchBox.setAttribute('material', 'color', 'green');  // Change box color to green when ON
-            } else if (data === "App turned off") {
-              console.log("Switch is now OFF");
-              switchBox.setAttribute('material', 'color', 'red');  // Change box color to red when OFF
-            }
-          })
-          .catch((error) => {
-            console.error('Error updating switch state:', error);
+        if (nielitMarker) {
+          nielitMarker.addEventListener("markerFound", function () {
+            console.log("Custom Marker Found!");
+            updateSwitchState("on");
           });
-      }
+
+          nielitMarker.addEventListener("markerLost", function () {
+            console.log("Custom Marker Lost!");
+            updateSwitchState("off");
+          });
+        } else {
+          console.error("Marker element not found!");
+        }
+
+        function updateSwitchState(state) {
+          const url = `https://roomcontrol.glitch.me/toggle-app?state=${state}`;
+
+          fetch(url)
+            .then((response) => response.text())
+            .then((data) => {
+              console.log(data);
+              if (data === "App turned on") {
+                switchBox.setAttribute("material", "color", "green");
+              } else if (data === "App turned off") {
+                switchBox.setAttribute("material", "color", "red");
+              }
+            })
+            .catch((error) => {
+              console.error("Error updating switch state:", error);
+            });
+        }
+      });
     </script>
   </body>
 </html>
