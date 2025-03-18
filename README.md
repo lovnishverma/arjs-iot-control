@@ -3,6 +3,12 @@ Web-based application designed to control the solar lights in Room No. 212, NIEL
 
 **Live Demo:** https://nielitar.glitch.me/
 
+## Deployment
+This project is hosted live at **[Room Control](https://nielitar.glitch.me/)** on Glitch.
+
+Connected Project **[Room Control](https://roomcontrol.glitch.me/)** on Glitch.
+
+Connected Github Project **[Room Control](https://github.com/lovnishverma/roomcontrol)** on Github.
 
 ![nielitar](https://github.com/user-attachments/assets/a6397754-7c8b-4d2c-aeee-49e1582f0df3)
 
