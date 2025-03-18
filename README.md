@@ -1,5 +1,5 @@
 # AR.js Web-Based IoT Control
-Web-based application designed to control the solar lights in** Room No. 212, NIELIT Chandigarh Ropar Campus** when custom marker is detected
+Web-based application designed to control the solar lights in Room No. 212, NIELIT Chandigarh Ropar Campus when custom marker is detected
 
 **Live Demo:** https://nielitar.glitch.me/
 
